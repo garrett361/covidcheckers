@@ -69,5 +69,8 @@ def wegmanschecker(urlstring):
             print('Timeout on attempt:', attempts)
             return False
 
+        except:
+            print('Error')
+
 
 wegmanschecker(site)

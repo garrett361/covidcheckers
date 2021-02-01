@@ -63,5 +63,8 @@ def weischecker(urlstring):
             print('timeout')
             return False
 
+        except:
+            print('Error')
+
 
 weischecker(site)
