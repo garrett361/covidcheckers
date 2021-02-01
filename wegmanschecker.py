@@ -23,7 +23,7 @@ emailbody = """
 The Wegman\'s covid site changed: https://www.wegmans.com/covid-vaccine-registration/
 """
 msg = MIMEText(emailbody, 'html')
-msg['Subject'] = 'Change to Weis Covid Site'
+msg['Subject'] = 'Change to Wegman\'s Covid Site'
 msg['From'] = sender
 msg['To'] = ','.join(receivers)
 
