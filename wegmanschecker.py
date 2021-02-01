@@ -66,11 +66,10 @@ def wegmanschecker(urlstring):
             driver.close()
 
         except TimeoutException:  # in case of timeout
-            print('Timeout on attempt:', attempts)
-            return False
-
+            print('Timeout on attempt', attempts)
+            
         except:
-            print('Error')
+            print('Other error on attempt', attempts)
 
 
 wegmanschecker(site)

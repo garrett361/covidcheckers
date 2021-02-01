@@ -60,11 +60,10 @@ def weischecker(urlstring):
             driver.close()
 
         except TimeoutException:  # in case of timeout
-            print('timeout')
-            return False
-
+            print('Timeout on attempt', attempts)
+            
         except:
-            print('Error')
+            print('Other error on attempt', attempts)
 
 
 weischecker(site)
