@@ -37,7 +37,7 @@ def weischecker(urlstring):
     findstring = 'Appointments Full'
     attempts = 0
     while True:
-        time.sleep(60)
+        time.sleep(500) # attempt rate
         try:  # loading website and navigating to appropriate page
             driver = webdriver.Chrome(options=options)
             driver.get(urlstring)

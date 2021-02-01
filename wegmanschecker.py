@@ -37,7 +37,7 @@ def wegmanschecker(urlstring):
     # attempt counter
     attempts = 0
     while True:
-        time.sleep(60) # try once per minute
+        time.sleep(500) # attempt rate
         try:  # loading website and navigating to appropriate iframe
             driver = webdriver.Chrome(options=options)
             driver.get(urlstring)
