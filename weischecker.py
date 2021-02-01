@@ -41,6 +41,7 @@ def weischecker(urlstring):
         try:  # loading website and navigating to appropriate page
             driver = webdriver.Chrome(options=options)
             driver.get(urlstring)
+            # navigating to the link for shots in PA
             button = driver.find_element_by_xpath(
                 '//*[@id="main-content"]/article/div/div/div/div[2]/ul[1]/li[2]/a')
             button.click()
