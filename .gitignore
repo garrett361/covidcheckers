@@ -1,2 +1,5 @@
 # ignore stored emails/pwd
 covidemails.py
+
+# pycache
+__pycache__/
