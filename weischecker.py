@@ -15,29 +15,46 @@ from covidemails import emaildetails
 # website to check
 site = 'https://www.weismarkets.com/pharmacy-services'
 
-# email setup 
+# email setup
 sender = emaildetails['sender']
-pwd= emaildetails['pwd']
+pwd = emaildetails['pwd']
 receivers = emaildetails['receivers']
-emailbody = """
+# email when site changes
+changedmsgbody = """
 The Weis covid site changed: https://www.weismarkets.com/pharmacy-services
 """
-msg = MIMEText(emailbody, 'html')
-msg['Subject'] = 'Change to Weis Covid Site'
-msg['From'] = sender
-msg['To'] = ','.join(receivers)
+changedmsg = MIMEText(changedmsgbody, 'html')
+changedmsg['Subject'] = 'Change to Weis Covid Site'
+changedmsg['From'] = sender
+changedmsg['To'] = ','.join(receivers)
+
+# email when many errors have occurred
+errorlimit = 10
+errorsmsgbody = f'There have been {errorlimit} errors in the Weis site checker: https://www.weismarkets.com/pharmacy-services'
+errorsmsg = MIMEText(errorsmsgbody, 'html')
+errorsmsg['Subject'] = 'Weis Checker Errors'
+errorsmsg['From'] = sender
+errorsmsg['To'] = ','.join(receivers)
 
 
+def email(message):
+    s = smtplib.SMTP_SSL(host='smtp.gmail.com', port=465)
+    s.login(user=sender, password=pwd)
+    s.sendmail(sender, receivers, message.as_string())
+    s.quit()
 
-def weischecker(urlstring):
+
+def Weischecker(urlstring):
     # browser setup
     options = webdriver.ChromeOptions()
     options.add_argument('headless')
     # text to find on page
     findstring = 'Appointments Full'
+    # attempts and errors counter
     attempts = 0
+    errors = 0
     while True:
-        time.sleep(500) # attempt rate
+        time.sleep(500)  # attempt rate
         try:  # loading website and navigating to appropriate page
             driver = webdriver.Chrome(options=options)
             driver.get(urlstring)
@@ -51,19 +68,20 @@ def weischecker(urlstring):
                 print('No change to weis site. Attempt:', attempts)
             else:  # sending emails if site changes
                 print('Website changed! Attempt:', attempts)
-                s = smtplib.SMTP_SSL(host='smtp.gmail.com', port=465)
-                s.login(user=sender, password=pwd)
-                s.sendmail(sender, receivers, msg.as_string())
-                s.quit()
+                email(changedmsg)
                 return False
 
             driver.close()
 
         except TimeoutException:  # in case of timeout
             print('Timeout on attempt', attempts)
-            
+            errors += 1
+            email(errorsmsg)
+
         except:
             print('Other error on attempt', attempts)
+            errors += 1
+            email(errorsmsg)
 
 
-weischecker(site)
+Weischecker(site)

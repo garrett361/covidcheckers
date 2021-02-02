@@ -19,25 +19,42 @@ site = 'https://www.wegmans.com/covid-vaccine-registration/'
 sender = emaildetails['sender']
 pwd = emaildetails['pwd']
 receivers = emaildetails['receivers']
-emailbody = """
+# email when site changes
+changedmsgbody = """
 The Wegman\'s covid site changed: https://www.wegmans.com/covid-vaccine-registration/
 """
-msg = MIMEText(emailbody, 'html')
-msg['Subject'] = 'Change to Wegman\'s Covid Site'
-msg['From'] = sender
-msg['To'] = ','.join(receivers)
+changedmsg = MIMEText(changedmsgbody, 'html')
+changedmsg['Subject'] = 'Change to Wegman\'s Covid Site'
+changedmsg['From'] = sender
+changedmsg['To'] = ','.join(receivers)
+
+# email when many errors have occurred
+errorlimit=10
+errorsmsgbody = f'There have been {errorlimit} errors in the Wegman\'s site checker: https://www.wegmans.com/covid-vaccine-registration/'
+errorsmsg = MIMEText(errorsmsgbody, 'html')
+errorsmsg['Subject'] = 'Wegman\'s Checker Errors'
+errorsmsg['From'] = sender
+errorsmsg['To'] = ','.join(receivers)
 
 
-def wegmanschecker(urlstring):
+def email(message):
+    s = smtplib.SMTP_SSL(host='smtp.gmail.com', port=465)
+    s.login(user=sender, password=pwd)
+    s.sendmail(sender, receivers, message.as_string())
+    s.quit()
+
+
+def Wegmanschecker(urlstring):
     # set up browswer
     options = webdriver.ChromeOptions()
     options.add_argument('headless')
     # string to find on target website
     findstring = 'All available vaccine appointments are reserved at this time. Please check back later for available timeslots.'
-    # attempt counter
+    # attempts and errors counter
     attempts = 0
+    errors = 0
     while True:
-        time.sleep(500) # attempt rate
+        time.sleep(500)  # attempt rate
         try:  # loading website and navigating to appropriate iframe
             driver = webdriver.Chrome(options=options)
             driver.get(urlstring)
@@ -57,19 +74,22 @@ def wegmanschecker(urlstring):
                 print('No change to wegmans site. Attempt:', attempts)
             else:  # sending emails if site changes
                 print('Website changed! Attempt:', attempts)
-                s = smtplib.SMTP_SSL(host='smtp.gmail.com', port=465)
-                s.login(user=sender, password=pwd)
-                s.sendmail(sender, receivers, msg.as_string())
-                s.quit()
+                email(changedmsg)
                 return False  # stop if changed
 
             driver.close()
 
         except TimeoutException:  # in case of timeout
             print('Timeout on attempt', attempts)
-            
+            errors += 1
+            if not errors%errorlimit:
+                email(errorlimit)
+
         except:
             print('Other error on attempt', attempts)
+            errors += 1
+            if not errors%errorlimit:
+                email(errorlimit)
 
 
-wegmanschecker(site)
+Wegmanschecker(site)
