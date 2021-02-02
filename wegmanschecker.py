@@ -53,6 +53,7 @@ def Wegmanschecker(urlstring):
     # attempts and errors counter
     attempts = 0
     errors = 0
+    reportedchanges=0
     while True:
         time.sleep(500)  # attempt rate
         try:  # loading website and navigating to appropriate iframe
@@ -75,7 +76,7 @@ def Wegmanschecker(urlstring):
             else:  # sending emails if site changes
                 print('Website changed! Attempt:', attempts)
                 email(changedmsg)
-                return False  # stop if changed
+                reportedchanges+=1
 
             driver.close()
 
@@ -96,6 +97,8 @@ def Wegmanschecker(urlstring):
             errors += 1
             if not errors % errorlimit:
                 email(errorlimit)
-
+        
+        if errors>100 or reportedchanges>20: # limiting run length
+            return False
 
 Wegmanschecker(site)

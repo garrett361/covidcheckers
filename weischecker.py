@@ -53,6 +53,7 @@ def Weischecker(urlstring):
     # attempts and errors counter
     attempts = 0
     errors = 0
+    reportedchanges=0
     while True:
         time.sleep(500)  # attempt rate
         try:  # loading website and navigating to appropriate page
@@ -89,6 +90,9 @@ def Weischecker(urlstring):
             errors += 1
             if not errors % errorlimit:
                 email(errorlimit)
+
+        if errors>100 or reportedchanges>20: # limiting run length
+            return False
 
 
 Weischecker(site)
