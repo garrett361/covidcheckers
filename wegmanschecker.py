@@ -85,10 +85,16 @@ def Wegmanschecker(urlstring):
             if not errors%errorlimit:
                 email(errorlimit)
 
-        except:
-            print('Other error on attempt', attempts)
+        except Exception as e:
+            print('Error:', e, 'On attempt:', attempts)
             errors += 1
-            if not errors%errorlimit:
+            if not errors % errorlimit:
+                email(errorlimit)
+
+        except:
+            print('Other error on attempt:', attempts)
+            errors += 1
+            if not errors % errorlimit:
                 email(errorlimit)
 
 

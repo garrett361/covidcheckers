@@ -78,10 +78,17 @@ def Weischecker(urlstring):
             errors += 1
             email(errorsmsg)
 
-        except:
-            print('Other error on attempt', attempts)
+        except Exception as e:
+            print('Error:', e, 'On attempt:', attempts)
             errors += 1
-            email(errorsmsg)
+            if not errors % errorlimit:
+                email(errorlimit)
+
+        except:
+            print('Other error on attempt:', attempts)
+            errors += 1
+            if not errors % errorlimit:
+                email(errorlimit)
 
 
 Weischecker(site)
