@@ -1,4 +1,4 @@
-# Checks whether wegman's covid site's website has changed
+# checker for wegman's covid site
 
 import time
 from selenium import webdriver
@@ -6,11 +6,11 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as ec
 from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.common.by import By
-import smtplib
-import ssl
-from email.mime.text import MIMEText
+
 # sender and recipient details in external file
-from covidemails import emaildetails
+from emaildetails import emaildetails
+# simple email class
+from simpleemail import SimpleEmail
 
 # website to check
 site = 'https://www.wegmans.com/covid-vaccine-registration/'
@@ -18,30 +18,10 @@ site = 'https://www.wegmans.com/covid-vaccine-registration/'
 # email setup
 sender = emaildetails['sender']
 pwd = emaildetails['pwd']
-receivers = emaildetails['receivers']
-# email when site changes
-changedmsgbody = """
-The Wegman\'s covid site changed: https://www.wegmans.com/covid-vaccine-registration/
-"""
-changedmsg = MIMEText(changedmsgbody, 'html')
-changedmsg['Subject'] = 'Change to Wegman\'s Covid Site'
-changedmsg['From'] = sender
-changedmsg['To'] = ','.join(receivers)
+recipients = emaildetails['recipients']
 
-# email when many errors have occurred
-errorlimit=10
-errorsmsgbody = f'There have been {errorlimit} errors in the Wegman\'s site checker: https://www.wegmans.com/covid-vaccine-registration/'
-errorsmsg = MIMEText(errorsmsgbody, 'html')
-errorsmsg['Subject'] = 'Wegman\'s Checker Errors'
-errorsmsg['From'] = sender
-errorsmsg['To'] = ','.join(receivers)
-
-
-def email(message):
-    s = smtplib.SMTP_SSL(host='smtp.gmail.com', port=465)
-    s.login(user=sender, password=pwd)
-    s.sendmail(sender, receivers, message.as_string())
-    s.quit()
+# trigger for emailing after many errors
+erroremailfrequency = 10
 
 
 def Wegmanschecker(urlstring):
@@ -55,7 +35,7 @@ def Wegmanschecker(urlstring):
     errors = 0
     reportedchanges=0
     while True:
-        time.sleep(500)  # attempt rate
+        time.sleep(5)  # attempt rate
         try:  # loading website and navigating to appropriate iframe
             driver = webdriver.Chrome(options=options)
             driver.get(urlstring)
@@ -74,8 +54,14 @@ def Wegmanschecker(urlstring):
             if findstring in foundstring:  # checking if the site is still unchanged
                 print('No change to wegmans site. Attempt:', attempts)
             else:  # sending emails if site changes
-                print('Website changed! Attempt:', attempts)
-                email(changedmsg)
+                print('Website changed! Attempt:', attempts, 'Changes:', reportedchanges)
+                # email when site changes
+                e = SimpleEmail(sender,
+                                    pwd,
+                                    recipients,
+                                    'Change to Wegman\'s Covid Site',
+                                    f'The Wegman\'s covid site changed: {site}')
+                e.send()
                 reportedchanges+=1
 
             driver.close()
@@ -83,22 +69,37 @@ def Wegmanschecker(urlstring):
         except TimeoutException:  # in case of timeout
             print('Timeout on attempt', attempts)
             errors += 1
-            if not errors%errorlimit:
-                email(errorlimit)
+            if not errors % erroremailfrequency:
+                e = SimpleEmail(sender,
+                                    pwd,
+                                    recipients,
+                                    'Wegman\'s Checker Errors',
+                                    f'Another {erroremailfrequency} errors have occurred in the Wegman\'s site checker: {site}')
+                e.send()
 
         except Exception as e:
             print('Error:', e, 'On attempt:', attempts)
             errors += 1
-            if not errors % errorlimit:
-                email(errorlimit)
+            if not errors % erroremailfrequency:
+                e = SimpleEmail(sender,
+                                    pwd,
+                                    recipients,
+                                    'Wegman\'s Checker Errors',
+                                    f'Another {erroremailfrequency} errors have occurred in the Wegman\'s site checker: {site}')
+                e.send()
 
         except:
             print('Other error on attempt:', attempts)
             errors += 1
-            if not errors % errorlimit:
-                email(errorlimit)
-        
-        if errors>100 or reportedchanges>20: # limiting run length
+            if not errors % erroremailfrequency:
+                e = SimpleEmail(sender,
+                                    pwd,
+                                    recipients,
+                                    'Wegman\'s Checker Errors',
+                                    f'There have been {erroremailfrequency} errors in the Wegman\'s site checker: {site}')
+                e.send()
+
+        if errors > 50 or reportedchanges > 50:  # limiting run length
             return False
 
 Wegmanschecker(site)
