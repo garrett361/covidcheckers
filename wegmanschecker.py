@@ -1,5 +1,7 @@
 # checker for wegman's covid site
 
+# CURRENTLY BROKEN DUE TO WEBSITE CHANGESs
+
 import time
 from selenium import webdriver
 from selenium.webdriver.support.ui import WebDriverWait
@@ -50,6 +52,7 @@ def Wegmanschecker(urlstring):
             time.sleep(1)
             foundstring = driver.find_element_by_class_name(
                 'message_content').text
+            print(foundstring)
             attempts += 1
             if findstring in foundstring:  # checking if the site is still unchanged
                 print('No change to wegmans site. Attempt:', attempts)
