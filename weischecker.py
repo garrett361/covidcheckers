@@ -28,7 +28,7 @@ def Weischecker(urlstring):
     options = webdriver.ChromeOptions()
     options.add_argument('headless')
     # text to find on page
-    findstring = 'Appointments Full'
+    findstring = 'Please Check Back Later Today'
     # attempts and errors counter
     attempts = 0
     errors = 0

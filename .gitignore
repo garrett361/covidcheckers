@@ -1,5 +1,5 @@
 # ignore stored emails/pwd
-covidemails.py
+emaildetails.py
 
 # pycache
 __pycache__/
