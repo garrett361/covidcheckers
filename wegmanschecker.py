@@ -7,7 +7,7 @@ from selenium.webdriver.support import expected_conditions as ec
 from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.common.by import By
 
-# sender and recipient details in external file
+# sender, pwd, and recipient details in external file
 from emaildetails import emaildetails
 # simple email class
 from simpleemail import SimpleEmail
@@ -35,11 +35,7 @@ def Wegmanschecker(urlstring):
     errors = 0
     reportedchanges=0
     while True:
-<<<<<<< HEAD
         time.sleep(5)  # attempt rate
-=======
-        time.sleep(400)  # attempt rate
->>>>>>> 5bc86baa44f769924c826afec6ebea6cfeaf6e88
         try:  # loading website and navigating to appropriate iframe
             driver = webdriver.Chrome(options=options)
             driver.get(urlstring)
