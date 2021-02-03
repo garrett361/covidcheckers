@@ -34,7 +34,7 @@ def Weischecker(urlstring):
     errors = 0
     reportedchanges = 0
     while True:
-        time.sleep(5)  # attempt rate
+        time.sleep(500)  # attempt rate
         try:  # loading website and navigating to appropriate page
             driver = webdriver.Chrome(options=options)
             driver.get(urlstring)
