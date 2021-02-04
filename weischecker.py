@@ -20,8 +20,8 @@ sender = emaildetails['sender']
 pwd = emaildetails['pwd']
 recipients = emaildetails['recipients']
 
-# trigger for emailing after many errors
-erroremailfrequency = 10
+# trigger for emailing/stoppping after many errors
+stoptrigger=50
 
 def Weischecker(urlstring):
     # browser setup
@@ -62,37 +62,19 @@ def Weischecker(urlstring):
         except TimeoutException:  # in case of timeout
             print('Timeout on attempt', attempts)
             errors += 1
-            if not errors % erroremailfrequency:
-                e = SimpleEmail(sender,
-                                    pwd,
-                                    recipients,
-                                    'Weis Checker Errors',
-                                    f'Another {erroremailfrequency} errors have occurred in the Weis site checker: {site}')
-                e.send()
+
 
         except Exception as e:
             print('Error:', e, 'On attempt:', attempts)
             errors += 1
-            if not errors % erroremailfrequency:
-                e = SimpleEmail(sender,
+
+        if errors > stoptrigger or reportedchanges > stoptrigger:  # limiting run length
+            e = SimpleEmail(sender,
                                     pwd,
                                     recipients,
-                                    'Weis Checker Errors',
-                                    f'Another {erroremailfrequency} errors have occurred in the Weis site checker: {site}')
-                e.send()
-
-        except:
-            print('Other error on attempt:', attempts)
-            errors += 1
-            if not errors % erroremailfrequency:
-                e = SimpleEmail(sender,
-                                    pwd,
-                                    recipients,
-                                    'Weis Checker Errors',
-                                    f'There have been {erroremailfrequency} errors in the Weis site checker: {site}')
-                e.send()
-
-        if errors > 50 or reportedchanges > 50:  # limiting run length
+                                    'Weis Checker Stopped',
+                                    f'There have been {stoptrigger} errors or changes reported by the Weis Checker. Stopping now. {site}')
+            e.send()
             return False
 
 

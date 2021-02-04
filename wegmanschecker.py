@@ -23,7 +23,7 @@ pwd = emaildetails['pwd']
 recipients = emaildetails['recipients']
 
 # trigger for emailing after many errors
-erroremailfrequency = 10
+stoptrigger = 50
 
 
 def Wegmanschecker(urlstring):
@@ -35,7 +35,7 @@ def Wegmanschecker(urlstring):
     # attempts and errors counter
     attempts = 0
     errors = 0
-    reportedchanges=0
+    reportedchanges = 0
     while True:
         time.sleep(500)  # attempt rate
         try:  # loading website and navigating to appropriate iframe
@@ -57,52 +57,42 @@ def Wegmanschecker(urlstring):
             if findstring in foundstring:  # checking if the site is still unchanged
                 print('No change to wegmans site. Attempt:', attempts)
             else:  # sending emails if site changes
-                print('Website changed! Attempt:', attempts, 'Changes:', reportedchanges)
+                print('Website changed! Attempt:',
+                      attempts, 'Changes:', reportedchanges)
                 # email when site changes
                 e = SimpleEmail(sender,
-                                    pwd,
-                                    recipients,
-                                    'Change to Wegman\'s Covid Site',
-                                    f'The Wegman\'s covid site changed: {site}')
+                                pwd,
+                                recipients,
+                                'Change to Wegman\'s Covid Site',
+                                f'The Wegman\'s covid site changed: {site}')
                 e.send()
-                reportedchanges+=1
+                reportedchanges += 1
 
             driver.close()
 
         except TimeoutException:  # in case of timeout
             print('Timeout on attempt', attempts)
             errors += 1
-            if not errors % erroremailfrequency:
+            if not errors % stoptrigger:
                 e = SimpleEmail(sender,
-                                    pwd,
-                                    recipients,
-                                    'Wegman\'s Checker Errors',
-                                    f'Another {erroremailfrequency} errors have occurred in the Wegman\'s site checker: {site}')
+                                pwd,
+                                recipients,
+                                'Wegman\'s Checker Errors',
+                                f'Another {stoptrigger} errors have occurred in the Wegman\'s site checker: {site}')
                 e.send()
 
         except Exception as e:
             print('Error:', e, 'On attempt:', attempts)
             errors += 1
-            if not errors % erroremailfrequency:
-                e = SimpleEmail(sender,
-                                    pwd,
-                                    recipients,
-                                    'Wegman\'s Checker Errors',
-                                    f'Another {erroremailfrequency} errors have occurred in the Wegman\'s site checker: {site}')
-                e.send()
 
-        except:
-            print('Other error on attempt:', attempts)
-            errors += 1
-            if not errors % erroremailfrequency:
-                e = SimpleEmail(sender,
-                                    pwd,
-                                    recipients,
-                                    'Wegman\'s Checker Errors',
-                                    f'There have been {erroremailfrequency} errors in the Wegman\'s site checker: {site}')
-                e.send()
-
-        if errors > 50 or reportedchanges > 50:  # limiting run length
+        if errors > stoptrigger or reportedchanges > stoptrigger:  # limiting run length
+            e = SimpleEmail(sender,
+                            pwd,
+                            recipients,
+                            'Wegman\'s Checker Stopped',
+                            f'There have been {stoptrigger} errors or changes reported by the Wegman\'s Checker. Stopping now. {site}')
+            e.send()
             return False
+
 
 Wegmanschecker(site)
